@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
+import { buildConfigPayload, buildRuntimeHeaders } from "piphi-runtime-testkit-node";
 
 import { createApp } from "../src/app.js";
 
@@ -23,10 +24,14 @@ test("runtime conforms to shared PiPhi contract fixtures", async (t) => {
   t.after?.(() => app.close());
 
   for (const fixture of fixtures.cases) {
+    const payload = fixture.id === "config"
+      ? buildConfigPayload(fixture.body ?? {})
+      : fixture.body;
     const response = await app.inject({
       method: fixture.method,
       url: fixture.path,
-      payload: fixture.body,
+      payload,
+      headers: fixture.id === "config" ? buildRuntimeHeaders() : undefined,
     });
     assert.equal(response.statusCode, fixture.status, fixture.id);
     const body = JSON.parse(response.body);
