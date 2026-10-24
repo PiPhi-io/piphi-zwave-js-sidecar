@@ -7,6 +7,12 @@ export const projectDomain = "sidecar-service";
 export const defaultPort = 4211;
 
 export function runtimePort(): number {
-  const value = Number(process.env.PORT ?? defaultPort);
-  return Number.isInteger(value) && value > 0 && value <= 65535 ? value : defaultPort;
+  const raw = process.env.PORT;
+  if (raw === undefined) return defaultPort;
+  if (!/^\d+$/.test(raw)) throw new RangeError("PORT must be an integer between 1 and 65535.");
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1 || value > 65535) {
+    throw new RangeError("PORT must be an integer between 1 and 65535.");
+  }
+  return value;
 }
